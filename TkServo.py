@@ -13,7 +13,6 @@
 #Import Python Libraries___________________________________________________
 import Tkinter
 
-
 # Import Phidgets Libraries________________________________________________
 from Phidgets.PhidgetException import PhidgetErrorCodes, PhidgetException
 from Phidgets.Events.Events import AttachEventArgs, DetachEventArgs, ErrorEventArgs, InputChangeEventArgs, OutputChangeEventArgs, SensorChangeEventArgs
@@ -114,6 +113,17 @@ def updateSliderInfo(sliderVal):
         sliderLabelText = ("SliderPosition: %d" % sliderVal)
         sliderLabel.configure(text = sliderLabelText)
 
+def toggleLED0():
+    if(LED0.get()):
+        interfaceKit.setOutputState(0,1)
+    else:
+        interfaceKit.setOutputState(0,0)
+
+def toggleLED1():
+    if(LED1.get()):
+        interfaceKit.setOutputState(1,1)
+    else:
+        interfaceKit.setOutputState(1,0)
 
 
 #Setup______________________________________________________________
@@ -192,6 +202,12 @@ else:
 
 #Main________________________________________________________
 
+LED0=Tkinter.IntVar()
+checkbox_0 = Tkinter.Checkbutton(mywindow, text='LED0', variable=LED0, command=toggleLED0)
+
+LED1=Tkinter.IntVar()
+checkbox_1 = Tkinter.Checkbutton(mywindow, text='LED1', variable=LED1, command=toggleLED1)
+
 upbutton = Tkinter.Button(mywindow, text="Up", command=turnup)
 downbutton = Tkinter.Button(mywindow, text="Down", command=turndown)
 exitButton = Tkinter.Button(mywindow, text="Exit", command=exitProgram)
@@ -200,6 +216,8 @@ upbutton.pack(padx=10,pady=20)
 downbutton.pack(padx=10,pady=20)
 positionlabel.pack(padx=10,pady=20)
 sliderLabel.pack(padx=10,pady=20)
+checkbox_0.pack()
+checkbox_1.pack()
 exitButton.pack(padx=10,pady=20)
                             
 mywindow.mainloop()
