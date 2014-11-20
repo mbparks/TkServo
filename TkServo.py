@@ -12,6 +12,8 @@
 
 #Import Python Libraries___________________________________________________
 import Tkinter
+import time
+import datetime
 
 # Import Phidgets Libraries________________________________________________
 from Phidgets.PhidgetException import PhidgetErrorCodes, PhidgetException
@@ -20,17 +22,16 @@ from Phidgets.Devices.InterfaceKit import InterfaceKit
 from Phidgets.Devices.AdvancedServo import AdvancedServo
 
 
-#Define GUI parameters____________________________________________________
+#Define GUI parameters and Global Vars_____________________________________
 mywindow = Tkinter.Tk()
 mywindow.geometry("300x250")
 mywindow.title("Phidget Tester")
-positionlabel = Tkinter.Label(mywindow, text = "Servo Position")
-sliderLabel = Tkinter.Label(mywindow, text = "Slider Position")
-
-
-#Define Global Variables__________________________________________________
 LED0=Tkinter.IntVar()
 LED1=Tkinter.IntVar()
+myservoposition = 110
+slidervalue = 0
+positionlabel = Tkinter.Label(mywindow, text = "Servo Position: %d" % myservoposition)
+sliderLabel = Tkinter.Label(mywindow, text = "Slider Position")
 
 
 # Function Definitions____________________________________________________
@@ -45,7 +46,7 @@ def turnRight():
         myservoposition -= 10
     positionlabeltext = ("Servo Position: %d" % myservoposition)
     positionlabel.configure(text = positionlabeltext)
-
+    print("Servo turned to %d" % myservoposition)
 
 def turnLeft():
     global myservoposition
@@ -58,13 +59,23 @@ def turnLeft():
         myservoposition += 10
     positionlabeltext = ("Servo Position: %d" % myservoposition)
     positionlabel.configure(text = positionlabeltext)
+    print("Servo turned to %d" % myservoposition)
 
-def updateSliderInfo(sliderVal):
-        sliderLabelText = ("SliderPosition: %d  " % sliderVal)
-        sliderLabel.configure(text = sliderLabelText)
+def updateSliderInfo(tempSliderVal):
+    global slidervalue 
+    slidervalue = tempSliderVal
+    sliderLabelText = ("Slider Position: %d  " % tempSliderVal)
+    sliderLabel.configure(text = sliderLabelText)
 
 def toggleLED(LEDnum, LEDstatus):
     interfaceKit.setOutputState(LEDnum,LEDstatus)
+
+def statusDump():
+    global slidervalue
+    global myservoposition
+    ts = time.time()
+    currTime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    print("Current Status (%s): %d, %d, %s, %s" % (currTime, myservoposition, slidervalue, LED0.get(), LED1.get()))
 
 def exitProgram():
     print("Closing Phidgets...")
@@ -93,11 +104,9 @@ def interfaceKitAttached(e):
     attached = e.device
     print("InterfaceKit %i Attached!" % (attached.getSerialNum()))
 
-
 def interfaceKitDetached(e):
     detached = e.device
     print("InterfaceKit %i Detached!" % (detached.getSerialNum()))
-
 
 def interfaceKitError(e):
     try:
@@ -106,11 +115,9 @@ def interfaceKitError(e):
     except PhidgetException as e:
         print("Phidget Exception %i: %s" % (e.code, e.details))
 
-
 def interfaceKitInputChanged(e):
     source = e.device
     print("InterfaceKit %i: Input %i: %s" % (source.getSerialNum(), e.index, e.state))
-
 
 def interfaceKitSensorChanged(e):
     source = e.device
@@ -118,10 +125,10 @@ def interfaceKitSensorChanged(e):
     if e.index == 0:
         updateSliderInfo(e.value)
 
-
 def interfaceKitOutputChanged(e):
     source = e.device
     print("InterfaceKit %i: Output %i: %s" % (source.getSerialNum(), e.index, e.state))
+
 
 
 
@@ -151,8 +158,7 @@ except PhidgetException as e:
     print("Exiting....")
     exit(1)
 
-myservoposition = 0
-advancedServo.setPosition(0, 0)
+advancedServo.setPosition(0, myservoposition)
 print("Servo initialized.")
 
 
@@ -193,7 +199,6 @@ except PhidgetException as e:
     exit(1)
 else:
     print("Interface Kit initialized.")
-    print("Ready to go!")
 
 
 
@@ -211,10 +216,13 @@ def main():
     rightButton = Tkinter.Button(mywindow, text="Turn Right", command=turnRight)
     rightButton.place(x=150, y= 150)
 
+    statusDumpButton = Tkinter.Button(mywindow, text="Send Status", command=statusDump)
+    statusDumpButton.place(x=5, y= 200)
+
     exitButton = Tkinter.Button(mywindow, text="Exit", command=exitProgram)
     exitButton.place(x=235, y= 200)
 
-    positionlabel.place(x=100, y=120)
+    positionlabel.place(x=90, y=120)
     sliderLabel.place(x=150, y=5)
                             
     mywindow.mainloop()
