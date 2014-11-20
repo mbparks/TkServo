@@ -22,37 +22,49 @@ from Phidgets.Devices.AdvancedServo import AdvancedServo
 
 #Define GUI parameters____________________________________________________
 mywindow = Tkinter.Tk()
-mywindow.geometry("300x400")
+mywindow.geometry("300x250")
+mywindow.title("Phidget Tester")
 positionlabel = Tkinter.Label(mywindow, text = "Servo Position")
 sliderLabel = Tkinter.Label(mywindow, text = "Slider Position")
 
 
-# Function Definitions_______________________________________________________
-def turnup():
+#Define Global Variables__________________________________________________
+LED0=Tkinter.IntVar()
+LED1=Tkinter.IntVar()
+
+
+# Function Definitions____________________________________________________
+def turnRight():
     global myservoposition
     myservoposition += 10
     try:
         advancedServo.setPosition(0, myservoposition)
     except PhidgetException as e:
         print("Phidget Exception %i: %s" % (e.code, e.details))
-        print("Servo at maximum position.")
+        print("Servo at right-most position.")
         myservoposition -= 10
     positionlabeltext = ("Servo Position: %d" % myservoposition)
     positionlabel.configure(text = positionlabeltext)
 
 
-def turndown():
+def turnLeft():
     global myservoposition
     myservoposition -= 10
     try:
         advancedServo.setPosition(0, myservoposition)
     except PhidgetException as e:
         print("Phidget Exception %i: %s" % (e.code, e.details))
-        print("Servo at minimum position.")
+        print("Servo at left-most position.")
         myservoposition += 10
     positionlabeltext = ("Servo Position: %d" % myservoposition)
     positionlabel.configure(text = positionlabeltext)
 
+def updateSliderInfo(sliderVal):
+        sliderLabelText = ("SliderPosition: %d  " % sliderVal)
+        sliderLabel.configure(text = sliderLabelText)
+
+def toggleLED(LEDnum, LEDstatus):
+    interfaceKit.setOutputState(LEDnum,LEDstatus)
 
 def exitProgram():
     print("Closing Phidgets...")
@@ -72,6 +84,9 @@ def exitProgram():
 
     print("Program successfully shutdown.  Goodbye.")
     exit(0)
+
+
+
 
 
 def interfaceKitAttached(e):
@@ -109,26 +124,10 @@ def interfaceKitOutputChanged(e):
     print("InterfaceKit %i: Output %i: %s" % (source.getSerialNum(), e.index, e.state))
 
 
-def updateSliderInfo(sliderVal):
-        sliderLabelText = ("SliderPosition: %d" % sliderVal)
-        sliderLabel.configure(text = sliderLabelText)
-
-def toggleLED0():
-    if(LED0.get()):
-        interfaceKit.setOutputState(0,1)
-    else:
-        interfaceKit.setOutputState(0,0)
-
-def toggleLED1():
-    if(LED1.get()):
-        interfaceKit.setOutputState(1,1)
-    else:
-        interfaceKit.setOutputState(1,0)
 
 
-#Setup______________________________________________________________
 
-#Create a AdvancedServo object___
+#Create and Initialize AdvancedServo object_______________________
 print("Initialzing Servo...")
 try:
     advancedServo = AdvancedServo()
@@ -152,14 +151,13 @@ except PhidgetException as e:
     print("Exiting....")
     exit(1)
 
-#Initialize servo
 myservoposition = 0
 advancedServo.setPosition(0, 0)
 print("Servo initialized.")
 
 
 
-#Create an interfacekit object____
+#Create  an initialize an interfacekit object_______________________
 print("Initialzing Interface Kit...")
 try:
     interfaceKit = InterfaceKit()
@@ -199,25 +197,27 @@ else:
 
 
 
-
 #Main________________________________________________________
+def main():
+    checkbox_0 = Tkinter.Checkbutton(mywindow, text='LED0', variable=LED0, command=lambda: toggleLED(0,LED0.get()))
+    checkbox_0.place(x=5, y=5)
 
-LED0=Tkinter.IntVar()
-checkbox_0 = Tkinter.Checkbutton(mywindow, text='LED0', variable=LED0, command=toggleLED0)
+    checkbox_1 = Tkinter.Checkbutton(mywindow, text='LED1', variable=LED1, command=lambda: toggleLED(1,LED1.get()))
+    checkbox_1.place(x=5, y=30)
 
-LED1=Tkinter.IntVar()
-checkbox_1 = Tkinter.Checkbutton(mywindow, text='LED1', variable=LED1, command=toggleLED1)
+    leftButton = Tkinter.Button(mywindow, text="Turn Left", command=turnLeft)
+    leftButton.place(x=50, y= 150)
 
-upbutton = Tkinter.Button(mywindow, text="Up", command=turnup)
-downbutton = Tkinter.Button(mywindow, text="Down", command=turndown)
-exitButton = Tkinter.Button(mywindow, text="Exit", command=exitProgram)
+    rightButton = Tkinter.Button(mywindow, text="Turn Right", command=turnRight)
+    rightButton.place(x=150, y= 150)
 
-upbutton.pack(padx=10,pady=20)
-downbutton.pack(padx=10,pady=20)
-positionlabel.pack(padx=10,pady=20)
-sliderLabel.pack(padx=10,pady=20)
-checkbox_0.pack()
-checkbox_1.pack()
-exitButton.pack(padx=10,pady=20)
+    exitButton = Tkinter.Button(mywindow, text="Exit", command=exitProgram)
+    exitButton.place(x=235, y= 200)
+
+    positionlabel.place(x=100, y=120)
+    sliderLabel.place(x=150, y=5)
                             
-mywindow.mainloop()
+    mywindow.mainloop()
+
+if __name__ == '__main__':
+    main()
