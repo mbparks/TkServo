@@ -14,6 +14,7 @@
 import Tkinter
 import time
 import datetime
+import csv
 
 # Import Phidgets Libraries________________________________________________
 from Phidgets.PhidgetException import PhidgetErrorCodes, PhidgetException
@@ -76,6 +77,12 @@ def statusDump():
     ts = time.time()
     currTime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
     print("Current Status (%s): %d, %d, %s, %s" % (currTime, myservoposition, slidervalue, LED0.get(), LED1.get()))
+    
+    #Write status of all I/O to .CSV file
+    fp = open('DataDump.csv', 'a')
+    writer = csv.writer(fp, delimiter=',')
+    data=[currTime, myservoposition, slidervalue, LED0.get(), LED1.get()]
+    writer.writerow(data)
 
 def exitProgram():
     print("Closing Phidgets...")
